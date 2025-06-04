@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build: .                                # Собираем образ из Dockerfile в текущей директории
+    ports:
+      - "8080:8080"                         # Порт хоста : порт контейнера
+    environment:                           # Переменные окружения для Spring Boot
+      SPRING_PROFILES_ACTIVE: postgres     # Активируем профиль с PostgreSQL
+      DB_HOST: db                          # Имя сервиса БД (db), как указано ниже
+      DB_PORT: 5432
+      DB_NAME: mydb
+      DB_USER: myuser
+      DB_PASSWORD: mypassword
+    depends_on:
+      - db                                 # Говорим, что контейнер app зависит от db
+    networks:
+      - spring-net                         # Общая сеть
+
+  db:
+    image: postgres:15                     # Образ PostgreSQL
+    container_name: postgres-container
+    restart: always
+    environment:
+      POSTGRES_DB: mydb                # Имя базы данных
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - spring-net
+
+volumes:
+  postgres_data:
+
+networks:
+  spring-net:
